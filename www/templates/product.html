@@ -1,0 +1,15 @@
+<ion-view view-title="Produto">
+  <ion-content>
+    <h4 align="center">{{product.title}}</h4>
+    <p align="center">Preço Médio: R$ {{product.middle_price}}</p>
+    <p align="center"><img src="http://lactoseapi.mariojorge.net/{{product.image_url}}" class="image-product"></p>
+    <h5 align="center">Onde encontrar?</h5>
+    <ion-list>
+      <ion-item ng-repeat="place in places" href="#/app/place/{{place.id}}" class="list-places">
+        {{place.title}}<br>
+        <spam class="place-adrress">{{place.address}}</spam><br>
+        <spam class="place-phone">Telefone: {{place.phone}}</spam>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
