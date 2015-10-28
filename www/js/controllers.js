@@ -111,51 +111,60 @@ angular.module('starter.controllers', [])
   })
 })
 
-.controller('PlaceCtrl', function($scope, $ionicLoading, $compile) {
+.controller('PlaceCtrl', function($scope, $ionicLoading, $compile, $stateParams, $http) {
   var geocoder;
   var map;
-  var myLatlng
+  var myLatlng;
+
+  $scope.loadingIndicator = $ionicLoading.show({
+      content: 'Loading Data',
+      animation: 'fade-in',
+      showBackdrop: false,
+      maxWidth: 200,
+      showDelay: 500
+  });
 
   function initialize() {
-    var address = "Av. Washington Soares, 85 - Edson Queiroz,Fortaleza - CE,60811-340";
-    //var myLatlng = new google.maps.LatLng(-3.733863, -38.516256);
-    geocoder = new google.maps.Geocoder();
+    var url = 'http://lactoseapi.mariojorge.net/locations/' + $stateParams.placeId;
+    $http.get(url).then(function(resp) {
+      $scope.location = resp.data.location
 
-    geocoder.geocode( { 'address': address}, function(results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-        myLatlng = map.setCenter(results[0].geometry.location);
-      } else {
-        alert('Geocode was not successful for the following reason: ' + status);
-      }
-    });
+      var myLatlng = new google.maps.LatLng($scope.location.coordinate_x, $scope.location.coordinate_y);
 
-    var mapOptions = {
-      center: myLatlng,
-      zoom: 16,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    map = new google.maps.Map(document.getElementById("map"),
-        mapOptions);
+      var mapOptions = {
+        center: myLatlng,
+        zoom: 16,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+      };
+      map = new google.maps.Map(document.getElementById("map"),
+          mapOptions);
+      
+      //Marker + infowindow + angularjs compiled ng-click
+      var contentString = "<div><a ng-click='clickTest()'>Click me!</a></div>";
+      var compiled = $compile(contentString)($scope);
+
+      var infowindow = new google.maps.InfoWindow({
+        content: compiled[0]
+      });
+
+      var marker = new google.maps.Marker({
+        position: myLatlng,
+        map: map,
+        title: 'Uluru (Ayers Rock)'
+      });
+
+      google.maps.event.addListener(marker, 'click', function() {
+        infowindow.open(map,marker);
+      });
+
+      $scope.map = map;
+
+      $ionicLoading.hide()
+    }, function(err) {
+        console.error('ERR', err);
+      $ionicLoading.hide()
+    })
     
-    //Marker + infowindow + angularjs compiled ng-click
-    var contentString = "<div><a ng-click='clickTest()'>Click me!</a></div>";
-    var compiled = $compile(contentString)($scope);
-
-    var infowindow = new google.maps.InfoWindow({
-      content: compiled[0]
-    });
-
-    var marker = new google.maps.Marker({
-      position: myLatlng,
-      map: map,
-      title: 'Uluru (Ayers Rock)'
-    });
-
-    google.maps.event.addListener(marker, 'click', function() {
-      infowindow.open(map,marker);
-    });
-
-    $scope.map = map;
   }
 
   google.maps.event.addDomListener(window, 'load', initialize);
